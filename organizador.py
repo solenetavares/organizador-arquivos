@@ -1,28 +1,58 @@
 import os
+import shutil
 
-# Caminho padrão do Windows para a pasta Documentos
-# Mudei o caminho para incluir o OneDrive do sistema!
 caminho_documentos = "C:/Users/mimim/OneDrive/Documentos"
 
-def testar_pasta():
-    print("--- INICIANDO DIAGNÓSTICO ---")
-    
-    # 1. Verifica se a pasta existe de verdade no seu PC
-    if os.path.exists(caminho_documentos):
-        print(f"✅ Sucesso: O Python achou a pasta: {caminho_documentos}")
-    else:
-        print(f"❌ Erro: O Python NÃO achou essa pasta. O caminho está errado!")
-        return
+mapeamento = {
+    ".pdf": "Documentos_PDF",
+    ".jpg": "Imagens",
+    ".png": "Imagens",
+    ".jpeg": "Imagens",
+    ".zip": "Compactados",
+    ".rar": "Compactados",
+    ".mp4": "Vídeos",
+    ".mp3": "Músicas",
+    ".txt": "Textos",
+}
 
-    # 2. Tenta listar o que tem dentro
+def organizar_pasta():
+    print("--- Iniciando a faxina automática ---")
+
+    # 1. Garante que a pasta existe
+    if not os.path.exists(caminho_documentos):
+        print("Caminho não encontrado.")
+        return
+    
+    # 2. Olha tudo que tem dentro da pasta
     arquivos = os.listdir(caminho_documentos)
-    
-    print(f"Quantidade de arquivos encontrados lá dentro: {len(arquivos)}")
-    
-    print("--- Arquivos encontrados: ---")
+
     for item in arquivos:
-        print(f"- {item}")
-    print("-----------------------------")
+        # AQUI FOI CORRIGIDO: Juntando o caminho da pasta com o nome do arquivo
+        caminho_completo_item = os.path.join(caminho_documentos, item)
+
+        # Ignora pastas, só organiza arquivos
+        if os.path.isdir(caminho_completo_item):
+            continue
+
+        # 3. Pega a extensão do arquivo
+        nome_arquivo, extensao = os.path.splitext(item)
+        extensao = extensao.lower() # Garante que funciona mesmo se for .JPG maiúsculo
+
+        # 4. Se a extensão estiver no mapeamento, move o arquivo
+        if extensao in mapeamento:
+            nome_pasta_destino = mapeamento[extensao]
+            caminho_pasta_destino = os.path.join(caminho_documentos, nome_pasta_destino)
+
+            # Se a pasta destino não existir, cria ela
+            if not os.path.exists(caminho_pasta_destino):
+                os.makedirs(caminho_pasta_destino)
+                print(f"Pasta {nome_pasta_destino} criada.")
+
+            # Move o arquivo para a pasta destino
+            shutil.move(caminho_completo_item, os.path.join(caminho_pasta_destino, item))
+            print(f"Arquivo {item} movido para a pasta {nome_pasta_destino}.")
+
+    print("--- Faxina automática concluída ---")
 
 if __name__ == "__main__":
-    testar_pasta()
+    organizar_pasta()
